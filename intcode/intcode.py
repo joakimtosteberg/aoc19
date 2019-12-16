@@ -1,7 +1,5 @@
 import pkgutil
 import queue
-from operation import Operation, StopException
-from operations import *
 import sys
 
 class InvalidAddressingModeException(Exception):
@@ -163,8 +161,6 @@ class IntCode:
                 ret = operation.func(input_arguments)
                 if operation.store_result:
                     self.store_result(ret, address_modes % 10)
-        except StopException:
-            self.stopped = True
         except WaitInputException:
             self.pc -= 1
             pass
