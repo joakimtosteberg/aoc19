@@ -38,4 +38,12 @@ def produce_resource(prod_chart, available_resources, resource, amount):
 produce_resource(prod_chart, available_resources, "FUEL", 1)
 print(basic_requirements)
 print(available_resources)
-#print(prod_chart)
+
+basic_requirements["ORE"] = 0
+available_resources = {}
+amount_fuel = 0
+while basic_requirements["ORE"] < 1000000000000:
+    produce_resource(prod_chart, available_resources, "FUEL", 1)
+    available_resources["FUEL"] = 0
+    amount_fuel += 1
+print(amount_fuel - 1)
