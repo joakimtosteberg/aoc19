@@ -23,20 +23,24 @@ max_x = 0
 max_y = 0
 ball_pos = None
 paddle_pos = None
-target_paddle_pos = None
-first = True
 
-def get_ball_impact(cur_pos, prev_pos, base_y):
-    dx = cur_pos[0] - ball_pos[0]
-    dy = cur_pos[1] - ball_pos[1]
-    return (cur_pos[0] + dx * (base_y - cur_pos[1]),y)
+def get_tile(board, pos):
+    if pos in board:
+        return board[pos]
+    else:
+        return EMPTY
+
+def get_paddle_direction(paddle_pos, ball_pos):
+    if paddle_pos[0] < ball_pos[0]:
+        return 1
+    elif paddle_pos[0] > ball_pos[0]:
+        return -1
+    return 0
 
 def print_board(board, width, height):
     for y in range(0,height):
         for x in range(0, width):
-            tile = EMPTY
-            if (x,y) in board:
-                tile = board[(x,y)]
+            tile = get_tile(board, (x,y))
             out = ''
             if tile == EMPTY:
                 out = ' '
@@ -62,26 +66,13 @@ while not arcade.is_stopped():
             print("Score: %u" % (id))
         else:
             if id == BALL:
-                if ball_pos is not None:
-                    if y > ball_pos[1]:
-                        target_paddle_pos = get_ball_impact((x,y), ball_pos, paddle_pos[1])
-                        print("paddle target=%s" % (str(target_paddle_pos)))
-                    else:
-                        target_paddle_pos = paddle_pos
                 ball_pos = (x,y)
             elif id == PADDLE:
                 paddle_pos = (x,y)
-                if target_paddle_pos is None:
-                    target_paddle_pos = paddle_pos
-            max_x = max(x,max_x)
-            max_y = max(x,max_y)
-            board[(x,y)] = id
+            else:
+                board[(x,y)] = id
+                max_x = max(x,max_x)
+                max_y = max(x,max_y)
 
-    #    print_board(board, max_x+1, max_y+1)
-    print("ball_target=%s" % (str(ball_pos)))
-    if paddle_pos == target_paddle_pos:
-        in_queue.put(0)
-    elif paddle_pos[0] < target_paddle_pos[0]:
-        in_queue.put(1)
-    else:
-        in_queue.put(-1)
+    paddle_direction = get_paddle_direction(paddle_pos, ball_pos)
+    in_queue.put(paddle_direction)
