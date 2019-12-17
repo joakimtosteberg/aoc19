@@ -24,12 +24,6 @@ max_y = 0
 ball_pos = None
 paddle_pos = None
 
-def get_tile(board, pos):
-    if pos in board:
-        return board[pos]
-    else:
-        return EMPTY
-
 def get_paddle_direction(paddle_pos, ball_pos):
     if paddle_pos[0] < ball_pos[0]:
         return 1
@@ -40,7 +34,7 @@ def get_paddle_direction(paddle_pos, ball_pos):
 def print_board(board, width, height):
     for y in range(0,height):
         for x in range(0, width):
-            tile = get_tile(board, (x,y))
+            tile = board.get((x,y),EMPTY)
             out = ''
             if tile == EMPTY:
                 out = ' '

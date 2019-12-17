@@ -8,22 +8,6 @@ class InvalidAddressingModeException(Exception):
 class WaitInputException(Exception):
     pass
 
-class Argument:
-    def __init__(self, value, address_mode):
-        self.value = value
-        self.address_mode = address_mode
-
-    def get_read_value(self, memory):
-        if self.address_mode == 0:
-            return memory[self.value]
-        elif self.address_mode == 1:
-            return self.value
-
-        raise InvalidAddressingModeException()
-
-    def get_write_value(self, memory):
-        return self.value
-
 class OpCode:
     def __init__(self, num_input, store_result, func):
         self.num_input = num_input
@@ -105,10 +89,7 @@ class IntCode:
         self.output_func = output_func
 
     def read_memory(self, address):
-        value = self.memory.get(address)
-        if value is None:
-            value = 0
-        return value
+        return self.memory.get(address, 0)
 
     def get_input_arguments(self, address_modes, num_arguments):
         arguments = []
