@@ -3,7 +3,8 @@ import math
 
 sequence = []
 with open("day16.input") as file:
-    sequence = numpy.matrix([int(char) for char in file.read()])
+    str_seq = file.read()
+    initial_sequence = numpy.matrix([int(char) for char in str_seq])
 
 def get_pattern(base_pattern, position):
     pattern = []
@@ -27,7 +28,18 @@ def fft(sequence, pattern):
     return numpy.matrix(row)
 
 passes = 100
+sequence = initial_sequence
+for i in range(0, passes):
+    sequence = fft(sequence, BASE_PATTERN)
+list_seq = sequence.tolist()[0]
+print(list_seq[0:8])
+
+
+offset =  int(str_seq[0:7])
+passes = 10000
+sequence = initial_sequence
 for i in range(0, passes):
     sequence = fft(sequence, BASE_PATTERN)
 
-print(sequence)
+list_seq = sequence.tolist()[0]
+print(list_seq[offset:offset+8])
