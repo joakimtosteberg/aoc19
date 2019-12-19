@@ -17,15 +17,26 @@ ship_map = {}
 
 system.run_program()
 
-pos = (0,0)
-while not out_queue.empty():
-    obj = chr(out_queue.get())
-    if obj == '\n':
-        pos = (0, pos[1]+1)
-    else:
-        ship_map[pos] = obj
-        pos = (pos[0]+1, pos[1])
+def read_map(out_queue, ship_map, do_print):
+    pos = (0,0)
+    was_newline = False
+    map_done = False
+    while not out_queue.empty():
+        obj = chr(out_queue.get())
+        if do_print:
+            print(obj, end='')
+        if obj == '\n':
+            if was_newline:
+                map_done = True
+            else:
+                was_newline = True
+                pos = (0, pos[1]+1)
+        elif not map_done:
+            was_newline = False
+            ship_map[pos] = obj
+            pos = (pos[0]+1, pos[1])
 
+read_map(out_queue, ship_map, False)
 checksum = 0
 for pos in ship_map:
     if ((ship_map.get((pos[0], pos[1]), '.') == '#') and
@@ -38,3 +49,7 @@ for pos in ship_map:
 print("Alignemnt calibration=%u" % (checksum))
     
         
+program[0] = 2
+system.load_program(program)
+system.run_program()
+read_map(out_queue, ship_map, True)
