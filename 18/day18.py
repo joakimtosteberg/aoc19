@@ -2,7 +2,7 @@ import itertools
 cave = {}
 pos = None
 num_keys = 0
-with open("day18.input.example") as file:
+with open("day18.input") as file:
     y = 0
     for line in file:
         for x in range(0, len(line)):
@@ -58,15 +58,25 @@ def length_to_keys(cave, keys, start_pos):
     return found_keys
         
 
-def find_all_keys(cave, found_keys, keys, steps, total_num_keys):
+best_steps_to_end = None
+
+def find_all_keys(cave, found_keys, keys, steps, total_num_keys, state_map):
+    global best_steps_to_end
+    if best_steps_to_end and steps >= best_steps_to_end:
+        return None
+
     if len(keys) == total_num_keys:
+        print(steps)
         return steps
 
-    best_steps_to_end = None
     for key in found_keys:
-        current_keys = keys + [key]
+        current_keys = ''.join(sorted(keys)) + key
+        current_steps = steps + found_keys[key][1]
+        if current_keys in state_map and current_steps >= state_map[current_keys]:
+            continue
+        state_map[current_keys] = current_steps
         new_keys = length_to_keys(cave, current_keys, found_keys[key][0])
-        steps_to_end = find_all_keys(cave, new_keys, current_keys, steps + found_keys[key][1], total_num_keys)
+        steps_to_end = find_all_keys(cave, new_keys, current_keys, current_steps, total_num_keys, state_map)
         if steps_to_end:
             if not best_steps_to_end:
                 best_steps_to_end = steps_to_end
@@ -76,5 +86,5 @@ def find_all_keys(cave, found_keys, keys, steps, total_num_keys):
     return best_steps_to_end
 
     
-found_keys = length_to_keys(cave, [], pos)
-print(find_all_keys(cave, found_keys, [], 0, num_keys))
+found_keys = length_to_keys(cave, "", pos)
+print(find_all_keys(cave, found_keys, "", 0, num_keys, {}))
