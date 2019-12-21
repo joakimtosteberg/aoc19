@@ -23,7 +23,11 @@ def is_door(tile):
 def is_empty(tile):
     return tile == '.'
 
+key_length_cache = {}
 def length_to_keys(cave, keys, start_pos):
+    global key_length_cache
+    if keys in key_length_cache:
+        return key_length_cache[keys]
     track = {start_pos: 0}
     found_keys = {}
     positions = [start_pos]
@@ -55,6 +59,8 @@ def length_to_keys(cave, keys, start_pos):
         if not next_positions:
             break
         positions = next_positions
+
+    key_length_cache[keys] = found_keys
     return found_keys
         
 
