@@ -1,28 +1,35 @@
 import itertools
 
 
-state = {'deck': list(range(0,10007))}
+tracked_card_pos = 2019
+deck_size = 10007
 
-def deal_with_increment(state, increment):
-    tmp_deck = state['deck'][:]
-    for i in range(len(tmp_deck)):
-        state['deck'][(i*increment) % len(tmp_deck)] = tmp_deck[i]
 
-def cut(state, increment):
-    state['deck'] = state['deck'][increment:] + state['deck'][0:increment]
+def deal_with_increment(tracked_card_pos, deck_size, increment):
+    return (tracked_card_pos * increment) % deck_size
 
-def deal_into_new_stack(state):
-    state['deck'].reverse()
+def cut(tracked_card_pos, deck_size, increment):
+    if increment > 0:
+        if tracked_card_pos < increment:
+            return (deck_size - increment) + tracked_card_pos
+        else:
+            return tracked_card_pos - increment
+    else:
+        if tracked_card_pos < (deck_size + increment):
+            return tracked_card_pos - increment
+        else:
+            return tracked_card_pos - (deck_size + increment)
+
+def deal_into_new_stack(tracked_card_pos, deck_size):
+    return  (deck_size - 1) - tracked_card_pos
 
 with open("day22.input") as file:
     for line in file:
         if "deal with increment" in line:
-            deal_with_increment(state, int(line.split(" ")[3]))
+            tracked_card_pos = deal_with_increment(tracked_card_pos, deck_size, int(line.split(" ")[3]))
         elif "cut" in line:
-            cut(state, int(line.split(" ")[1]))
+            tracked_card_pos = cut(tracked_card_pos, deck_size, int(line.split(" ")[1]))
         elif "deal into new stack" in line:
-            deal_into_new_stack(state)
+            tracked_card_pos = deal_into_new_stack(tracked_card_pos, deck_size)
 
-for i in range(len(state['deck'])):
-    if state['deck'][i] == 2019:
-        print(i)
+print(tracked_card_pos)
