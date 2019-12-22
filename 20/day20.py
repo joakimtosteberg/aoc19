@@ -94,6 +94,9 @@ def explore_maze(maze, labels, start, end, recurse = False):
                     if recurse:
                         depth += depth_change
 
+                if not depth in tracks:
+                    tracks[depth] = {}
+
                 if next_pos in tracks[depth]:
                     continue
 
@@ -112,5 +115,8 @@ maze, labels = read_maze("day20.input")
 
 start = find_label_pos(labels, "AA")
 end = find_label_pos(labels, "ZZ")
-tracks = explore_maze(maze, labels, start, end)
+tracks = explore_maze(maze, labels, start, end, False)
+print(tracks[0][end])
+
+tracks = explore_maze(maze, labels, start, end, True)
 print(tracks[0][end])
