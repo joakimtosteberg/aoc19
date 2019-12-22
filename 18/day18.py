@@ -1,6 +1,6 @@
 import itertools
 cave = {}
-pos = None
+start_positions = []
 num_keys = 0
 with open("day18.input") as file:
     y = 0
@@ -9,7 +9,7 @@ with open("day18.input") as file:
             cave[(x,y)] = line[x]
             if line[x] == '@':
                 cave[(x,y)] = '.'
-                pos = (x,y)
+                start_positions.append((x,y))
             elif line[x].islower():
                 num_keys += 1
         y += 1
@@ -105,5 +105,5 @@ def find_all_keys(cave, found_keys, keys, steps, total_num_keys, state_map):
     return best_steps_to_end
 
     
-found_keys = length_to_keys(cave, pos)
+found_keys = length_to_keys(cave, start_positions[0])
 print(find_all_keys(cave, found_keys, "", 0, num_keys, {}))
