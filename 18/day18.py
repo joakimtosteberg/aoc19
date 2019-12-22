@@ -39,8 +39,10 @@ def length_to_keys(cave, start_pos):
                 next_pos = (pos[0] + direction[0],
                             pos[1] + direction[1])
 
-                # Skip positions we have reached in fewer steps
-                if next_pos in track and steps >= track[next_pos][0]:
+
+                # We are doing BFS, so any square we have visisted
+                # will already have the shorted possible path to it
+                if next_pos in track:
                     continue
 
                 tile = cave[next_pos]
