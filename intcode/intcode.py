@@ -1,6 +1,6 @@
 import pkgutil
-import queue
 import sys
+import collections
 
 class InvalidAddressingModeException(Exception):
     pass
@@ -14,6 +14,22 @@ class OpCode:
         self.store_result = store_result
         self.func = func
 
+class IOQueue:
+    def __init__(self):
+        self.deque = collections.deque()
+
+    def empty(self):
+        return not self.deque
+
+    def put(self, value):
+        self.deque.append(value)
+
+    def get(self):
+        return self.deque.popleft()
+
+    def size(self):
+        return len(self.deque)
+
 class IntCode:
 
     def __init__(self):
@@ -22,8 +38,8 @@ class IntCode:
         self.relative_base = 0
         self.input_func = None
         self.output_func = None
-        self.input_queue = queue.SimpleQueue()
-        self.output_queue = queue.SimpleQueue()
+        self.input_queue = IOQueue()
+        self.output_queue = IOQueue()
         self.stopped = False
 
         self.ops = { 1: OpCode(2, True, lambda args: args[0] + args[1]),
