@@ -2,7 +2,7 @@ def deal_with_increment(tracked_card_pos, deck_size, increment):
     return (tracked_card_pos * increment) % deck_size
 
 def cut(tracked_card_pos, deck_size, increment):
-    return tracked_card_pos - increment % deck_size
+    return (tracked_card_pos - increment) % deck_size
 
 def deal_into_new_stack(tracked_card_pos, deck_size):
     return  (deck_size - 1) - tracked_card_pos
