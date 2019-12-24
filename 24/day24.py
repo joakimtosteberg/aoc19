@@ -71,7 +71,8 @@ with open("day24.input") as file:
     for line in file:
         x = 0
         for tile in line.rstrip():
-            update_tile(layout, x, y, 1 if tile == '#' else 0)
+            if tile == '#':
+                update_tile(layout, x, y, 1)
             x += 1
         y += 1
 
