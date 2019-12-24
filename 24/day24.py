@@ -17,11 +17,16 @@ with open("day24.input") as file:
 def get_tile(layout, x, y):
     return layout.get((x,y), {'bug': 0,'adjacent': 0})
 
+def get_num_bugs(layout, x, y):
+    return get_tile(layout, x, y)['bug']
+
 def get_adjacent_bugs(layout, x, y):
-    return (get_tile(layout, x + 1, y)['bug'] +
-            get_tile(layout, x - 1, y)['bug'] +
-            get_tile(layout, x, y + 1)['bug'] +
-            get_tile(layout, x, y - 1)['bug'])
+    adjacent_bugs = 0
+    for step in [(1,0),(-1,0),(0,1),(0,-1)]:
+        adj_x = x + step[0]
+        adj_y = y + step[1]
+        adjacent_bugs += get_num_bugs(layout, adj_x, adj_y)
+    return adjacent_bugs
 
 for y in range(height):
     for x in range(width):
