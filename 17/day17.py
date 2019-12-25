@@ -1,4 +1,5 @@
 import sys
+import copy
 import itertools
 sys.path.append('../intcode')
 
@@ -39,22 +40,38 @@ def read_map(out_queue, ship_map, do_print):
                 ship_map[pos] = {'visits': 0,  'allowed_visits': 1}
             elif obj == '^':
                 robot_pos = pos
-                robot_dir = (1,0)
+                robot_dir = (0,1)
+                ship_map[pos] = {'visits': 0,  'allowed_visits': 1}
             pos = (pos[0]+1, pos[1])
     return robot_pos, robot_dir
 
-def get_intersections(ship_map):
-    checksum = 0
-    intersections = {}
-    for pos in ship_map:
-        if (((pos[0] + 1, pos[1]) in ship_map) and
-            ((pos[0] - 1, pos[1]) in ship_map) and
-            ((pos[0], pos[1] + 1) in ship_map) and
-            ((pos[0], pos[1] - 1) in ship_map)):
-            intersections[pos] = 1
-            ship_map[(pos)]['allowed_visits'] += 1
-            checksum += pos[0]*pos[1]
-    return intersections,checksum
+def read_map2(ship_map):
+    with open("day17.part2.input.example") as file:
+        robot_pos = None
+        robot_dir = None
+        pos = (0,0)
+        for line in file:
+            for obj in line.rstrip():
+                if obj == '#':
+                    ship_map[pos] = {'visits': 0,  'allowed_visits': 1}
+                elif obj == '^':
+                    robot_pos = pos
+                    robot_dir = (0,1)
+                    ship_map[pos] = {'visits': 0,  'allowed_visits': 1}
+                pos = (pos[0]+1, pos[1])
+            pos = (0, pos[1]+1)
+        return robot_pos, robot_dir
+
+def is_corner(ship_map, pos):
+    total_num_paths = 0
+    for step in [(1,0),(0,1)]:
+        next_pos1 = (pos[0] + step[0], pos[1] + step[1])
+        next_pos2 = (pos[0] - step[0], pos[1] - step[1])
+        num_paths = 0
+        if ((next_pos1 in ship_map and next_pos2 in ship_map) or
+            (next_pos1 not in ship_map and next_pos2 not in ship_map)):
+            return False
+    return True
 
 def is_end(ship_map, pos):
     num_paths = 0
@@ -62,58 +79,61 @@ def is_end(ship_map, pos):
         num_paths += 1 if (pos[0] + step[0], pos[1] + step[1]) in ship_map else 0
     return num_paths == 1
 
-def all_visited(ship_map):
+def get_nodes(ship_map, robot_pos):
+    checksum = 0
+    nodes = {robot_pos:{}}
     for pos in ship_map:
-        if ship_map[pos]['visits'] == 0:
-            return False
-    return True
+        if (((pos[0] + 1, pos[1]) in ship_map) and
+            ((pos[0] - 1, pos[1]) in ship_map) and
+            ((pos[0], pos[1] + 1) in ship_map) and
+            ((pos[0], pos[1] - 1) in ship_map)):
+            nodes[pos] = {}
+            ship_map[(pos)]['allowed_visits'] += 1
+            checksum += pos[0]*pos[1]
+        elif is_end(ship_map, pos) or is_corner(ship_map, pos):
+            nodes[pos] = {}
+    return nodes,checksum
 
-def search(ship_map, robot_pos, robot_dir, depth=0):
-    destinations = {}
-    has_destinations = True
-    for step in [(1,0),(-1,0),(0,1),(0,-1)]:
-        length = 0
-        for length in itertools.count(1):
-            if depth == 0:
-                print(length)
-            pos = (robot_pos[0] + step[0] * length, robot_pos[1] + step[1] * length)
-            next_search = None
-            if pos in ship_map:
-                ship_map[pos]['visits'] += 1
-                if ship_map[pos]['visits'] > ship_map[pos]['allowed_visits']:
-                    length += 1
+def build_graph(ship_map, nodes):
+    search_dirs = [(1,0),(-1,0),(0,1),(0,-1)]
+    for node_pos in nodes:
+        for direction in search_dirs:
+            for length in itertools.count(1):
+                pos = (node_pos[0] + direction[0] * length, node_pos[1] + direction[1] * length)
+                if not pos in ship_map:
                     break
-                elif ship_map[pos]['allowed_visits'] == 2:
-                    next_search = pos
-            elif length > 1:
-                next_search = (robot_pos[0] + step[0] * (length - 1), robot_pos[1] + step[1] * (length -1))
+                if pos in nodes:
+                    nodes[node_pos][pos] = length
+                    break
 
-            if next_search:
-                if is_end(ship_map, next_search):
-                    if all_visited(ship_map):
-                        print("ALL VISISTED")
-                else:
-                    search(ship_map, next_search, robot_dir, depth+1)
-                    destinations[next_search] = 1
-
-            if pos not in ship_map:
-                break
-
-        for length in reversed(range(1,length)):
-            pos = (robot_pos[0] + step[0] * length, robot_pos[1] + step[1] * length)
-            if pos in ship_map:
-                ship_map[pos]['visits'] -= 1
-
-    return destinations
-
+def search_graph(graph, pos):
+    search_sets = [(graph,pos)]
+    while search_sets:
+        next_search_sets = []
+        print(len(search_sets))
+        for search_set in search_sets:
+            for node_pos in search_set[0][search_set[1]]:
+                new_graph = copy.deepcopy(search_set[0])
+                del new_graph[search_set[1]][node_pos]
+                if not new_graph[search_set[1]]:
+                    del new_graph[search_set[1]]
+                del new_graph[node_pos][search_set[1]]
+                if not new_graph[node_pos]:
+                    del new_graph[node_pos]
+                    if not new_graph:
+                        print("PATH FOUND")
+                        return
+                    continue
+                next_search_sets.append((new_graph,node_pos))
+        search_sets = next_search_sets
 
 program[0] = 2
 system.load_program(program)
 system.run_program()
 
 robot_pos, robot_dir = read_map(out_queue, ship_map, True)
-intersections, checksum = get_intersections(ship_map)
-
+#robot_pos, robot_dir = read_map2(ship_map)
+graph, checksum = get_nodes(ship_map, robot_pos)
 print("Alignemnt calibration=%u" % (checksum))
-
-print(search(ship_map, robot_pos, robot_dir))
+build_graph(ship_map, graph)
+search_graph(graph, robot_pos)
